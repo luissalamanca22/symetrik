@@ -1,0 +1,7 @@
+#File types
+*.pyc
+*.sqlite3
+
+# Directories
+__pycache__/
+env/
