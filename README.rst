@@ -49,8 +49,7 @@ IMPORT_DB_NAME="sqlite:///imported_csv_data.db"
 
 Usage
 =====
-You can start to use this tool following these steps:
 #. Upload a CSV file in your bucket
 #. Run the command `python manage.py load_data`
 #. You can also run the tests with `python manage.py test` 
-#. Besides, you can execute a request using the API REST Example: GET http://127.0.0.1:8000/importer/query_table/?some_param_to_filer=anyvalue&
+#. Besides, you can execute a request using the API REST Example: GET http://127.0.0.1:8000/importer/query_table/?some_param_to_filer=anyvalue&order_by=any_param
