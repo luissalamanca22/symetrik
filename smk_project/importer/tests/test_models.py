@@ -10,8 +10,7 @@ from importer.models import (
 )
 
 class CSVImporterTestCase(TestCase):
-    """---"""
-
+    """Tests for methods of the class CSVImporter"""
     def setUp(self):
         self.importer = CSVImporter()
 
@@ -27,6 +26,10 @@ class CSVImporterTestCase(TestCase):
     def test_creation_of_database(self):
         self.importer._create_database()
         self.assertIsNotNone(self.importer._engine)
+
+    def test_filename_is_csv(self):
+        with self.assertRaises(ValueError):
+            self.importer.filename = "client_data.xls"
 
     def test_sort_of_files(self):
         files = self.importer.bucket.objects.all()
@@ -62,7 +65,7 @@ class CSVImporterTestCase(TestCase):
 
 
 class DBModelTestCase(TestCase):
-
+    """Tests for methods of the class DBModel"""
     def setUp(self):
         self.importer = CSVImporter()
         self.importer.retrieve_and_save_last_csv_file_from_s3()

@@ -1,19 +1,19 @@
 ============
-project-name
+Symetrik Importer of CSV files
 ============
 
-Se necesita que el aspirante desarrolle una solución basada en Django Framework y
-Django Rest Framework que cubra las necesidades requeridas en el sistema descrito a
-continuación.
-Tenemos la necesidad de poder subir archivos (.csv) al sistema de almacenamiento de
-amazon web services (AWS S3) y crear una tabla en una base de datos externa
-(diferente a la que usa el ORM de Django Framework) basada en el archivo, las
-columnas de esta tabla deben corresponder al del archivo, y cuyos tipos de datos
-pueden ser todos varchar o text, una vez subido, se debe leer el archivo
-implementando ejecución por hilos para almacenar su información en la tabla creada.
-Se debe garantizar que los datos guardados en las tablas creadas deben poder ser
-consultados desde un endpoint, el cual, debe tener implementado paginación,
-búsqueda por filtros y ordenamiento por columna.
+Applicant is required to develop a solution based on Django Framework and
+Django Rest Framework that covers the needs required in the system described in
+continuation.
+We need to be able to upload files (.csv) to the storage system of
+amazon web services (AWS S3) and create a table in an external database
+(different from the one used by the Django Framework ORM) based on the file, the
+columns of this table must correspond to that of the file, and whose data types
+can be all varchar or text, once uploaded, the file must be read
+implementing thread execution to store your information in the created table.
+It must be guaranteed that the data saved in the created tables must be able to be
+consulted from an endpoint, which must have pagination implemented,
+search by filters and sort by column.
 
 Features:
 
@@ -34,14 +34,14 @@ Configuration
 
 You need the following env variables in your file .env. This has to be in the folder smk_project.
 You have to fill the variables related to AWS with your access data.
-DOTENV=true
-DJANGO_DEBUG=true
+| DOTENV=true
+| DJANGO_DEBUG=true
+| 
+| AWS_ACCESS_ID=""
+| AWS_ACCESS_KEY=""
+| AWS_BUCKET_NAME=""
 
-AWS_ACCESS_ID=""
-AWS_ACCESS_KEY=""
-AWS_BUCKET_NAME=""
-
-IMPORT_DB_NAME="sqlite:///imported_csv_data.db"
+| IMPORT_DB_NAME="sqlite:///imported_csv_data.db"
 
 Usage
 =====
