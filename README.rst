@@ -34,14 +34,16 @@ Configuration
 
 You need the following env variables in your file .env. This has to be in the folder smk_project.
 You have to fill the variables related to AWS with your access data.
-| DOTENV=true
-| DJANGO_DEBUG=true
-| 
-| AWS_ACCESS_ID=""
-| AWS_ACCESS_KEY=""
-| AWS_BUCKET_NAME=""
 
-| IMPORT_DB_NAME="sqlite:///imported_csv_data.db"
+DOTENV=true
+
+DJANGO_DEBUG=true
+AWS_ACCESS_ID=""
+
+AWS_ACCESS_KEY=""
+AWS_BUCKET_NAME=""
+
+IMPORT_DB_NAME="sqlite:///imported_csv_data.db"
 
 Usage
 =====
