@@ -1,21 +1,24 @@
 # Framework de desarrollo.
 Django==3.0
 
-# Herramientas para crear interfaces bajo el estándar REST.
+# Tools to create interfaces under the REST standard.
 djangorestframework==3.11.0
 django-filter==2.3.0
 
-# Librería con herramientas para django.
+# Library with tools for django.
 django-extensions==2.2.9
 
-#Librería para el cargue de variables de entorno del archivo .env.
+#Library for loading environment variables of the file .env.
 django-dotenv==1.4.2
 
-# Libreria para debugear
+# Debug library
 ipdb==0.13.2
 
-# Librería para Linting.
+# library for Linting.
 flake8==3.7.9
+
+# Serialize data
+marshmallow==3.7.0
 
 # Pandas
 pandas==1.0.5
@@ -23,7 +26,7 @@ pandas==1.0.5
 # JWT
 pyjwt==1.7.1
 
-#Linting of coe
+#Linting of code
 pylint==2.5.3
 
 #Sqlalchemy

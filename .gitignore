@@ -1,6 +1,7 @@
 #File types
 *.pyc
 *.sqlite3
+*.db
 
 # Directories
 __pycache__/

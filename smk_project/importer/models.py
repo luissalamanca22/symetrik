@@ -6,10 +6,16 @@ from django.conf import settings
 import pandas as pd
 import boto3
 
-from sqlalchemy import Column, Integer, Float, Date, String, VARCHAR
+from sqlalchemy import (
+    Column, Integer, Float, Date,
+    String, VARCHAR, MetaData, Table,
+    select
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Query
+
+import marshmallow
 
 from .helpers import format_filename_as_tablename
 
@@ -26,6 +32,8 @@ class CSVImporter:
         """
         self._tablename = tablename
         self._create_database()
+        self._bucket = None
+        self._filename = None
 
     @property
     def tablename(self):
@@ -35,41 +43,113 @@ class CSVImporter:
     def tablename(self, value):
         self._tablename = value
 
-    def _create_database(self):
-        """Creates a new local sqlite DB"""
-        self.engine = create_engine(settings.IMPORT_DB_NAME)
-        Base.metadata.create_all(self.engine)
+    @property
+    def bucket(self):
+        if not self._bucket:
+            self._set_bucket()
+        return self._bucket
 
-    def _read_csv_file(self) -> pd.DataFrame:
-        """Read the current file and returns a dataframe"""
-        return pd.read_csv(self.filename)
+    @bucket.setter
+    def bucket(self, value):
+        self._bucket = value
 
-    def retrieve_and_save_last_csv_file_from_s3(self):
-        """Retrieve all the files in the default bucket and 
-        filters the last one added
-        """
+    @property
+    def filename(self):
+        return self._filename
+
+    @filename.setter
+    def filename(self, value):
+        if os.path.splitext(value)[1].lower() != ".csv":
+            raise ValueError("The file has to be a CSV")
+        self._filename = value
+
+    def _set_bucket(self):
         s3 = boto3.resource(
             's3',
             aws_access_key_id=settings.AWS_ACCESS_ID,
             aws_secret_access_key=settings.AWS_ACCESS_KEY
         )
-        bucket = s3.Bucket(settings.AWS_BUCKET_NAME)
+        self._bucket = s3.Bucket(settings.AWS_BUCKET_NAME)
 
-        files = bucket.objects.all()
-        files_sorted = sorted(
+    def _create_database(self):
+        """Creates a new local sqlite DB"""
+        self._engine = create_engine(settings.IMPORT_DB_NAME)
+        Base.metadata.create_all(self._engine)
+
+    def _read_csv_file(self) -> pd.DataFrame:
+        """Read the current file and returns a dataframe"""
+        return pd.read_csv(self.filename)
+
+
+    @staticmethod
+    def sort_files_by_modfied_date(files):
+        return sorted(
             files,
             key=lambda obj: int(obj.last_modified.strftime('%s')),
             reverse=True
         )
-        last_file_added = files_sorted[0]
-        bucket.download_file(last_file_added.key, last_file_added.key)
-        self.filename = last_file_added.key
+
+    def retrieve_and_save_last_csv_file_from_s3(self):
+        """Retrieve all the files in the default bucket and 
+        filters the last one added
+        """
+        files = self.bucket.objects.all()
+        files = filter(lambda obj: obj.key.endswith(".csv"), files) 
+        files_sorted = self.sort_files_by_modfied_date(files)
+        try:
+            # The most recent file should be first
+            last_file_added = files_sorted[0]
+        except IndexError:
+            raise Exception("There are no files in the bucket")
+        else:
+            self.bucket.download_file(last_file_added.key, last_file_added.key)
+            self.filename = last_file_added.key
 
     def import_cvs_file_to_table(self):
         """Import the current CSV file into a new table"""
         assert self.filename, "A filename has to be provided"
         assert self.tablename, "A tablename has to be provided"
         df = self._read_csv_file()
-        df.to_sql(con=self.engine, index_label='id',
+        df.to_sql(con=self._engine, index_label='id',
                   name=self.tablename, if_exists='replace')
         os.remove(self.filename)
+
+
+class DBModel:
+    engine = None
+
+    @staticmethod
+    def get_results(
+        tablename: str,
+        filters: dict = {},
+        order_by: str = None,
+        limit: int = 10
+    ):
+        DBModel.engine = create_engine(settings.IMPORT_DB_NAME)
+
+        metadata = MetaData()
+        table = Table(tablename, metadata, autoload=True, autoload_with=DBModel.engine)
+
+        Session = sessionmaker(bind=DBModel.engine)
+        session = Session()
+        query = session.query(table)
+
+        if filters and isinstance(filters, dict):
+            query = query.filter_by(**filters)
+        if order_by:
+            query = query.order_by(order_by)
+        if limit:
+            query = query.limit(limit or 10)
+        return query
+
+    @staticmethod
+    def serialize_results(query: Query):
+        types = {
+            "default": marshmallow.fields.String()
+        }
+        TableSchema = type('TableSchema', (marshmallow.Schema,), {
+            attr["name"]: types["default"]
+            for attr in query.column_descriptions
+        })
+        schema = TableSchema()
+        return schema.dump(query, many=True)
