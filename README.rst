@@ -23,7 +23,7 @@ Features:
 
 Installation
 ============
-
+#. You will need to have installed python with version 3.8.x
 #. Create new virtualenv with `python3 -m venv env`
 #. Activate your virtualenv `source env/bin/activate`
 #. Create .env file with and make sure it has all the env variables. This has to be in smk_project.
