@@ -23,7 +23,7 @@ Features:
 
 Installation
 ============
-
+#. You will need to have installed python with version 3.8.x
 #. Create new virtualenv with `python3 -m venv env`
 #. Activate your virtualenv `source env/bin/activate`
 #. Create .env file with and make sure it has all the env variables. This has to be in smk_project.
@@ -34,19 +34,22 @@ Configuration
 
 You need the following env variables in your file .env. This has to be in the folder smk_project.
 You have to fill the variables related to AWS with your access data.
-| DOTENV=true
-| DJANGO_DEBUG=true
-| 
-| AWS_ACCESS_ID=""
-| AWS_ACCESS_KEY=""
-| AWS_BUCKET_NAME=""
 
-| IMPORT_DB_NAME="sqlite:///imported_csv_data.db"
+DOTENV=true
+
+DJANGO_DEBUG=true
+
+AWS_ACCESS_ID=""
+
+AWS_ACCESS_KEY=""
+
+AWS_BUCKET_NAME=""
+
+IMPORT_DB_NAME="sqlite:///imported_csv_data.db"
 
 Usage
 =====
-You can start to use this tool following these steps:
 #. Upload a CSV file in your bucket
 #. Run the command `python manage.py load_data`
 #. You can also run the tests with `python manage.py test` 
-#. Besides, you can execute a request using the API REST Example: GET http://127.0.0.1:8000/importer/query_table/?some_param_to_filer=anyvalue&
+#. Besides, you can execute a request using the API REST Example: GET http://127.0.0.1:8000/importer/query_table/?some_param_to_filer=anyvalue&order_by=any_param
