@@ -1,11 +1,12 @@
+# Stdlib imports
 import io
 import os
 
+# Core Django imports
 from django.conf import settings
 
-import pandas as pd
+# Third-party app imports
 import boto3
-
 from sqlalchemy import (
     Column, Integer, Float, Date,
     String, VARCHAR, MetaData, Table,
@@ -14,9 +15,10 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Query
-
 import marshmallow
+import pandas as pd
 
+# Imports from your apps
 from .helpers import format_filename_as_tablename
 
 Base = declarative_base()
@@ -32,8 +34,8 @@ class CSVImporter:
         """
         self._tablename = tablename
         self._create_database()
-        self._bucket = None
-        self._filename = None
+        self.bucket = None
+        self.filename = None
 
     @property
     def tablename(self):
@@ -59,11 +61,15 @@ class CSVImporter:
 
     @filename.setter
     def filename(self, value):
-        if os.path.splitext(value)[1].lower() != ".csv":
+        if value and os.path.splitext(value)[1].lower() != ".csv":
             raise ValueError("The file has to be a CSV")
         self._filename = value
 
     def _set_bucket(self):
+        """
+        Uses the current AWS crendentials and connects to S3,
+        then set the bucket by default.
+        """
         s3 = boto3.resource(
             's3',
             aws_access_key_id=settings.AWS_ACCESS_ID,
@@ -80,7 +86,6 @@ class CSVImporter:
         """Read the current file and returns a dataframe"""
         return pd.read_csv(self.filename)
 
-
     @staticmethod
     def sort_files_by_modfied_date(files):
         return sorted(
@@ -94,7 +99,7 @@ class CSVImporter:
         filters the last one added
         """
         files = self.bucket.objects.all()
-        files = filter(lambda obj: obj.key.endswith(".csv"), files) 
+        files = filter(lambda obj: obj.key.endswith(".csv"), files)
         files_sorted = self.sort_files_by_modfied_date(files)
         try:
             # The most recent file should be first
@@ -116,19 +121,29 @@ class CSVImporter:
 
 
 class DBModel:
+    """ 
+    This class allows to interact with the database and serialize data
+    of a Query. 
+    """
     engine = None
+    MAX_NUM_RECORDS = 10
 
     @staticmethod
     def get_results(
         tablename: str,
         filters: dict = {},
         order_by: str = None,
-        limit: int = 10
+        page: int = 1
     ):
+        """"
+        With the given table creates a query applying 
+        to it the filters, order and limit
+        """
         DBModel.engine = create_engine(settings.IMPORT_DB_NAME)
 
         metadata = MetaData()
-        table = Table(tablename, metadata, autoload=True, autoload_with=DBModel.engine)
+        table = Table(tablename, metadata, autoload=True,
+                      autoload_with=DBModel.engine)
 
         Session = sessionmaker(bind=DBModel.engine)
         session = Session()
@@ -138,12 +153,16 @@ class DBModel:
             query = query.filter_by(**filters)
         if order_by:
             query = query.order_by(order_by)
-        if limit:
-            query = query.limit(limit or 10)
+        query = query.limit(DBModel.MAX_NUM_RECORDS).offset(page or 1)
         return query
 
     @staticmethod
     def serialize_results(query: Query):
+        """
+        Converts the results of the given query in a 
+        serialized data.
+        :param query: 
+        """
         types = {
             "default": marshmallow.fields.String()
         }

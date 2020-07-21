@@ -10,7 +10,7 @@ from importer.models import DBModel
 class ImportedTablesApiView(APIView):
     permission_classes = (AllowAny, )
     order_by_param = "order_by"
-    limit_param = "limit"
+    page_param = "page"
 
     def get_filters(self):
         """
@@ -20,17 +20,17 @@ class ImportedTablesApiView(APIView):
         params = self.request.query_params.dict()
         if self.order_by_param in params:
             del params[self.order_by_param]
-        if self.limit_param in params:
-            del params[self.limit_param]
+        if self.page_param in params:
+            del params[self.page_param]
         return params
 
     def get_order_by(self):
         """Returns the field to order the records"""
         return self.request.query_params.get(self.order_by_param, None)
 
-    def get_limit(self):
+    def get_page(self):
         """Returns the field to limit the records"""
-        return self.request.query_params.get(self.limit_param, None)
+        return self.request.query_params.get(self.page_param, None)
 
     def get(self, request, tablename):
         try:
@@ -38,7 +38,7 @@ class ImportedTablesApiView(APIView):
                 tablename, 
                 filters=self.get_filters(),
                 order_by=self.get_order_by(),
-                limit=self.get_limit()
+                page=self.get_page()
             )
             data = DBModel.serialize_results(query)
             return Response(data, status=status.HTTP_200_OK)
