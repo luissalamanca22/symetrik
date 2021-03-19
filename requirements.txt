@@ -2,7 +2,7 @@
 Django==3.0.7
 
 # Tools to create interfaces under the REST standard.
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 django-filter==2.3.0
 
 # Library with tools for django.
