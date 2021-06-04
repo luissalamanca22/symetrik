@@ -1,5 +1,5 @@
 # Framework de desarrollo.
-Django==3.0.7
+Django==3.1.9
 
 # Tools to create interfaces under the REST standard.
 djangorestframework==3.11.0
