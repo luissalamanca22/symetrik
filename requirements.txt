@@ -24,7 +24,7 @@ marshmallow==3.7.0
 pandas==1.0.5
 
 # JWT
-pyjwt==1.7.1
+pyjwt==2.4.0
 
 #Linting of code
 pylint==2.5.3
